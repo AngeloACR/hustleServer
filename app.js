@@ -29,11 +29,11 @@ const prodPort = process.env.PORT || 8080;
 
 
 // Connect to Database
-mongoose.connect(config.testDB);
+mongoose.connect(config.prodDB);
 
 // On Connection
 mongoose.connection.on('connected', () => {
-	console.log('Connected to database '+config.testDB);
+	console.log('Connected to database '+config.prodDB);
 });
 
 // On Error
@@ -75,6 +75,6 @@ app.get('/*', (req,res) => {
 });
 
 // Start Server
-app.listen(testPort, () => {
-	console.log('Server started on port '+testPort);
+app.listen(prodPort, () => {
+	console.log('Server started on port '+prodPort);
 });
