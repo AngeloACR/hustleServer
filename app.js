@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const passport = require('passport');
 const mongoose = require('mongoose');
+const compression = require('compression')
 
 const config = require('./config/database');
 
@@ -23,6 +24,8 @@ const payments = require('./shop/routes/payments');
 
 const checkouts = require('./shop/routes/checkouts');
 
+
+
 // Port Number
 const testPort= 3000;
 const prodPort = process.env.PORT || 8080;
@@ -40,6 +43,8 @@ mongoose.connection.on('connected', () => {
 mongoose.connection.on('error', (err) => {
 	console.log('Database error'+ err);
 });
+
+app.use(compression())
 
 // Cors Middleware
 app.use(cors());
