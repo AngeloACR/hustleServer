@@ -5,81 +5,98 @@ const cors = require('cors');
 const passport = require('passport');
 const mongoose = require('mongoose');
 const compression = require('compression');
-
 const config = require('./config/database');
-
+const cookieSess = require('cookie-session');
 const app = express();
 
-//const users = require('./routes/users');
 const users = require('./users/routes/users');
 
-//const products = require('./routes/products');
 const products = require('./shop/routes/products');
-
-//const shoppingCarts = require('./routes/shoppingCarts');
 const shoppingCarts = require('./shop/routes/shoppingCarts');
-
-//const payment = require('./routes/payment');
 const payments = require('./shop/routes/payments');
+const billings = require('./shop/routes/billings');
+const shippings = require('./shop/routes/shippings');
+const cards = require('./shop/routes/cards');
+const charges = require('./shop/routes/charges');
 
-const checkouts = require('./shop/routes/checkouts');
+// Ports to listen
 
-
-
-// Port Number
 const testPort= 3000;
 const prodPort = process.env.PORT || 8080;
 
+//Database stuff
 
-// Connect to Database
-mongoose.connect(config.prodDB);
+const myDB = config.testDB;
+//const myDB = config.prodDB;
 
-// On Connection
+	// Connect to Database
+mongoose.connect(myDB);
+
+	// On Connection
 mongoose.connection.on('connected', () => {
-	console.log('Connected to database '+config.prodDB);
+	console.log('Connected to database '+ myDB);
 });
 
-// On Error
+	// On Error
 mongoose.connection.on('error', (err) => {
 	console.log('Database error'+ err);
 });
 
+
+// Middlewares initialization
+
+	//App compression
 app.use(compression());
 
-// Cors Middleware
+	// Cors Middleware
 app.use(cors());
 
-// Set Static Folder
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Body Parser Middleware
+	// Body Parser Middleware
 app.use(bodyParser.json());
 
-// Passport Middleware
+	//Cookie session Middleware
+app.use(cookieSess ({
+	name: 'Hustle Session',
+	secret: config.cSecret,
+    maxAge: 7*24 * 60 * 60 * 1000 //A week
+	}));
+
+	// Passport Middleware
 app.use(passport.initialize());
 app.use(passport.session());
-
 require('./config/passport')(passport);
 
+// Set Static Folder
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+//Adding routes
+
+	//User stuff routes
 app.use('/users', users);
 
+	//Shop stuff routes
 app.use('/products', products);
 app.use('/shoppingCarts', shoppingCarts);
 app.use('/payment', payments);
-app.use('/checkout', checkouts);
 
 
 // Index Route
+
+	//In case of error
 app.get('/', (req, res) => {
 	res.send('Invalid Endpoint');
 });
 
+	//Pointing to angular app
 app.get('/*', (req,res) => {
 	var fileToSend = path.join(__dirname, 'public/index.html') 
 	res.sendFile(fileToSend);
 });
 
 // Start Server
-app.listen(prodPort, () => {
-	console.log('Server started on port '+prodPort);
+
+app.listen(testPort, () => {
+	console.log('Server started on port '+testPort);
 });

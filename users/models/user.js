@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const config = require('../../config/database');
+const crypto = require('crypto');
+
 
 // User Schema
 const UserSchema = mongoose.Schema({
@@ -15,6 +17,15 @@ const UserSchema = mongoose.Schema({
 	email: {
 		type: String,
 		required: true
+	},
+	validToken: {
+		type: String,
+	},
+	validTime: {
+		type: Number,
+	},
+	validEmail:{
+		type: Boolean
 	},
 	username: {
 		type: String,
@@ -66,6 +77,16 @@ module.exports.addUser = function(newUser, callback){
     });
 };
 
+module.exports.validateUser = function(username, callback){
+	const query = {username: username};
+	User.findOneAndUpdate(query, { 
+	$set: { 
+		"validEmail": true
+		}
+	},
+	callback);
+};
+
 module.exports.deleteUser = function(userToDelete, callback){
 	const query = {username: userToDelete.username}
 	User.findOneAndRemove(query, callback);
@@ -73,20 +94,22 @@ module.exports.deleteUser = function(userToDelete, callback){
 
 module.exports.updateUser = function(userToUpdate, updateData, callback){
 	const query = {username: userToUpdate.username};
-	User.findOneAndUpdate(query, 
-    { $set: { 
+	User.findOneAndUpdate(query, { 
+	$set: { 
 		"name": updateData.name,
 		"email": updateData.email
-    }},
+    	}
+	},
 	callback);
 };
 
 module.exports.setRole = function(userToUpdate, role, callback){
 	const query = {username: userToUpdate.username};
-	User.findOneAndUpdate(query, 
-    { $set: { 
+	User.findOneAndUpdate(query, { 
+	$set: { 
 		"role": role,
-    }},
+	    }
+	},
 	callback);
 };
 
@@ -95,4 +118,29 @@ module.exports.comparePassword = function(candidatePassword, hash, callback){
 		if(err) throw err;
 		callback(null, isMatch);
 	});
+};
+
+module.exports.setToken = function(username, vToken, vTime, callback) {	
+	const query = {username: username};
+	User.findOneAndUpdate(query, { 
+		$set: { 
+			"validToken": vToken,
+			"validTime": vTime
+    	}
+	},
+	callback);
+}
+
+module.exports.genToken = function(username){
+	
+	const hash = crypto.createHash('sha1');
+	
+	var hrTime = process.hrtime();
+	var validTime = hrTime[0] * 1000000 + hrTime[1] / 1000
+
+	var toHash = username + validTime + config.vSecret;
+	hash.update(toHash);
+	return [hash.digest('hex'), validTime]
+
+
 };

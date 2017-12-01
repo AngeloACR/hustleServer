@@ -77,7 +77,7 @@ productRouter.post('/dProduct', passport.authenticate('jwt', {session:false}), (
 });
 
 
-// Get product
+// Get products
 productRouter.get('/gProducts', (req, res, next) => {
 	
 	Product.getAllProducts( (err, products) => {
