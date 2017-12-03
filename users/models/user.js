@@ -92,13 +92,14 @@ module.exports.deleteUser = function(userToDelete, callback){
 	User.findOneAndRemove(query, callback);
 };
 
-module.exports.updateUser = function(userToUpdate, updateData, callback){
-	const query = {username: userToUpdate.username};
+module.exports.updateUser = function(updateData, callback){
+	const query = {username: updateData.username};
 	User.findOneAndUpdate(query, { 
 	$set: { 
-		"name": updateData.name,
-		"email": updateData.email
-    	}
+		"fName": updateData.fname,
+    	"lName": updateData.lname,
+    	"username": updateData.username,
+		}
 	},
 	callback);
 };
@@ -124,6 +125,7 @@ module.exports.setToken = function(username, vToken, vTime, callback) {
 	const query = {username: username};
 	User.findOneAndUpdate(query, { 
 		$set: { 
+			"validEmail": false,
 			"validToken": vToken,
 			"validTime": vTime
     	}

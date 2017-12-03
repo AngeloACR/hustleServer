@@ -18,118 +18,154 @@ let transporter = nodemailer.createTransport({
         }
     });
 
-// Create user
-/*userRouter.post('/cUser', (req, res, next) => {
-	const fName = req.body.fName;
-	const lName = req.body.lName;	
-	const email = req.body.email;
-	const username = req.body.username;
-	const password = req.body.password;
-	const role = "HustleMan"
-
-	let newUser = new User({
-		fName: fName,
-		lName: lName, 
-		email: email,
-		validEmail: false,
-		username: username.toLowerCase(),
-		password: password,
-		role: role,
-		hasCart: false,
-		hasCheck: false
-	});
-
-	User.getUserByUsername(newUser.username, (err, fTry) => {
-		if(err) throw err;
-		if(!fTry){					
-			User.getUserByEmail(newUser.email, (err, sTry) => {
-				if(err) throw err;
-				if(!sTry){
-						User.addUser(newUser, (err, user) => {
-							if(err){
-								return res.json({
-									success: false, 
-									msg:'Failed to register user'
-								});
-							} else {	
-								return res.json({
-									success: true, 
-									msg:'User registered'
-								});
-							}	
-						});
-				} else{
-					return res.json({
-						success: false, 
-						msg:'Email already in use'
-					});
-				}
-			});
-		} else {
-			return res.json({
-				success: false, 
-				msg:'Username already in use'
-			});
-		}
-	});
-
-});*/
+//**************************** USER CRUD************************************//
 
 userRouter.post('/cUser', (req, res, next) => {
-	const fName = req.body.fName;
-	const lName = req.body.lName;	
-	const email = req.body.email;
-	const username = req.body.username;
-	const password = req.body.password;
-	const role = "HustleMan"
-
-	let newUser = new User({
-		fName: fName,
-		lName: lName, 
-		email: email,
+	
+	const user = {
+		fName: req.body.fName,
+		lName: req.body.lName, 
+		email: req.body.email,
 		validEmail: false,
-		username: username.toLowerCase(),
-		password: password,
-		role: role,
+		username: req.body.username,
+		password: req.body.password,
+		role: "HustleMan",
 		hasCart: false,
 		hasCheck: false
-	});
+	}
 
-	var getUser = function(callback) {
-		User.getUserByUsername(newUser.username, (err, fTry) => {
+	let newUser = new User(user);
+
+	var gUser = function(callback){
+		getUser(newUser.username, (err, user) => {
 			if(err) callback(err);
-			if(!fTry){					
-				callback(null, fTry);
+			if(!user){					
+				callback(null);
 			} else {
 				callback(new Error('Username already in use'))
 			}
 		});
-	} 
-	
-	var getMail = function(callback) {
-		User.getUserByEmail(newUser.email, (err, sTry) => {
+	}
+
+	var gMail = function(callback){
+		getMail(newUser.email, (err, user) => {
 			if(err) callback(err);
-			if(!sTry){
-				callback(null, sTry);
-			} else{
-				callback(new Error('Email already in use'))			}
+			if(!user){					
+				callback(null);
+			} else {
+				callback(new Error('Email already in use'))
+			}
 		});
 	}
 
-	var addUser = function(callback) {
-		User.addUser(newUser, (err, user) => {
-			if(err){
-				callback(new Error('Failed to create user'))
+	var aUser = function(callback){
+		addUser(newUser, (err, user) => {
+			if(err) callback(err);
+			if(user){
+				callback(null, user);
 			} else {
-				callback(null, user);	
+				callback(new Error('There was an error'));
+			}
+		})
+	}
+		
+	async.series([
+		gUser,
+		gMail,
+		aUser
+	], function (err, result) {
+		if (err) {
+			return res.json({
+				success: false, 				
+				msg: err.message			
+			});
+		} else {
+			return res.json({
+				success: true, 				
+				msg: result			
+			});    	
+		}
+    });	
+});
+
+// Delete user
+userRouter.get('/dUser', passport.authenticate('jwt', {session:false}), (req, res, next) => {
+	const user = req.user;
+
+	let userToDelete = new User({
+		username: user.username
+	});
+
+	var gUser = function(callback){
+		getUser(user.username, (err, uUser) => {
+			if(err) callback(err);
+			if(user){					
+				callback(null, user);
+			} else {
+				callback(new Error('Username not found'))
+			}
+		});
+	}
+
+	var dUser = function(user, callback){
+		User.deleteUser(user, (err, dUser) =>{
+			if(err) callback(err);
+			callback(null)
+		});
+	}
+	async.series([
+		gUser,
+		dUser
+	], function (err, result) {
+		if (err) {
+			return res.json({
+				success: false, 				
+				msg: err.message			
+			});
+		} else {
+			return res.json({
+				success: true, 				
+				msg: 'User deleted'			
+			});    	
+		}
+    });	
+});
+
+// Update user, NEED TO IMPROVE
+userRouter.post('/uUser', passport.authenticate('jwt', {session:false}), (req, res, next) => {
+	const user = req.user;
+	const updateData = req.body.updateData;
+
+	let dataToUpdate = new User({
+		username: user.username,
+		fName: updateData.fName,
+		lName: updateData.lName,		
+		email: updateData.email
+	});
+
+	var gUser = function(callback){
+		getUser(user.username, (err, uUser) => {
+			if(err) callback(err);
+			if(uUser){					
+				callback(null, uUser);
+			} else {
+				callback(new Error('Username not found'))
+			}
+		});
+	}
+
+	var uUser = function(user, callback){
+		User.updateUser(dataToUpdate, (err, uUser) =>{
+			if(err) callback(err);
+			if(uUser){
+				callback(null, user);			
 			}	
 		});
-	}
+	}		
 
-		async.waterfall([
-    	getUser,
-    	getMail,
-    	addUser,
+	async.waterfall([
+    	gUser,
+    	uUser
 	], function (err, result) {
 		if (err) {
 			return res.json({
@@ -144,67 +180,94 @@ userRouter.post('/cUser', (req, res, next) => {
     });
 });
 
-// Create token
-/*userRouter.post('/cToken', (req, res, next) => {
-	const username = req.body.username;
-	var vCombo = [];
-	var user;
-
-	User.getUserByUsername(username, (err, user) => {
-		if(err) throw err;
-		if(user){
-
-			vCombo = User.genToken(user.username);
-
-			User.setToken(user.username, vCombo[0], vCombo[1], (err, uToken) => {
-				if(err) throw err;
-				if(uToken){
-					vCombo[0] = uToken.validToken;
-					vCombo[1] = uToken.validTime;
-					console.log(uToken);
-					// setup e-mail data with unicode symbols
-					var mailOptions = {
-					    from: '"Contacto Hustle" <contacto@thehustleclub.org>', // sender address
-					    to: uToken.email, // list of receivers
-					    subject: 'Hustle validation', // Subject line
-					    text: 'Hello! come on and enjoy the hustle benefits!', // plaintext body
-					    html: '<b>'+vCombo[0]+'</b>' // html body
-					};
-
-					// send mail with defined transport object
-					transporter.sendMail(mailOptions, function(error, info){
-					    if(error){
-					        return console.log(error);
-					    }
-					    console.log('Message sent: ' + info.response);
-						return res.json({
-							success: true, 				
-							msg:'Token Created'
-						});
-					});
-				}			
-			}); 
-		} else {
-			return res.json({
-				success: false, 				
-				msg:'User not found'			
-			});
-		}
+// Get User
+userRouter.get('/gUser', passport.authenticate('jwt', {session:false}), (req, res, next) => {
+	console.log(req.user);
+	return res.json({
+		user: req.user
 	});
-});*/
+});
+
+//*************************************USER AUTHENTICATION*********************************//
+
+// Authenticate
+userRouter.post('/authUser', (req, res, next) => {
+	const username = req.body.username;
+	const password = req.body.password;
+	//var sess = req.session;
+
+
+	var gUser = function(callback){
+		getUser(username, (err, user) => {
+			if(err) callback(err);
+			if(user){					
+				callback(null, user);
+			} else {
+				callback(new Error('Login failed, invalid username or password'));
+			}
+		});
+	}
+	
+
+	var cPass = function(user, callback){
+		User.comparePassword(password, user.password, (err, isMatch) => {
+			if(err) throw err;
+			if(isMatch){
+				const token = jwt.sign(user, config.secret, {
+					expiresIn: 604800 //1 week
+				});
+/*				sess.username = username;
+				sess.isLogged = true;
+				sess.jwToken = "JWT " + token;
+*/				var res = {
+					success: true,
+					token: 'JWT '+token,
+					user: {
+						id: user._id,
+						name: user.name,
+						username: user.username,
+						email: user.email
+					}
+				}
+				callback(null, res);
+			} else{
+				callback(new Error('Login failed, invalid username or password'));
+			}
+		});
+	}
+
+
+	async.waterfall([
+    	gUser,
+    	cPass
+	], function (err, result) {
+		if (err) {
+			return res.json({
+					success: false, 				
+					msg: err.message			
+				});
+		}
+		return res.json(result);    	
+    });
+});
+
+
+
+//****************************MAIL VALIDATION************************//
+
+
 
 userRouter.post('/cToken', (req, res, next) => {
 	const username = req.body.username;
 
-	var getUser = function(callback) {
-		User.getUserByUsername(username, (err, user) => {
+
+	var gUser = function(callback){
+		getUser(username, (err, user) => {
 			if(err) callback(err);
-			if(user){
-				xUser = user;
-				callback(null, xUser);
+			if(user){					
+				callback(null, user);
 			} else {
-				callback( new Error('User not found') )
-				return;
+				callback(new Error('Username not found'))
 			}
 		});
 	}
@@ -222,11 +285,8 @@ userRouter.post('/cToken', (req, res, next) => {
 	} 
 
 	var sendMail = function(uToken, callback){
-		if(uToken.stack){
-			callback(uToken);
-		}
 		var mailOptions = {
-		    from: '"Contacto Hustle" <contacto@thehustleclub.org>', // sender address
+		    from: '"The Hustle Club" <contacto@thehustleclub.org>', // sender address
 		    to: uToken.email, // list of receivers
 		    subject: 'Hustle validation', // Subject line
 		    text: 'Hello! come on and enjoy the hustle benefits!', // plaintext body
@@ -244,7 +304,7 @@ userRouter.post('/cToken', (req, res, next) => {
 	}
 
 	async.waterfall([
-    	getUser,
+    	gUser,
     	setToken,
     	sendMail,
 	], function (err, result) {
@@ -265,152 +325,92 @@ userRouter.post('/cToken', (req, res, next) => {
 
 // Validate user
 userRouter.post('/vUser', (req, res, next) => {
+
 	const username = req.body.username;
 	const vToken = req.body.vToken;
 
 	const hrTime = process.hrtime();
 	const thisTime = hrTime[0] * 1000000 + hrTime[1] / 1000
-	const maxTime = 3600*8*1000000; //8 horas
+	const maxTime = 3600*8*1000000; //60 segundos
 
-	User.getUserByUsername(username, (err, user) => {
-		if(err) throw err;
-		if(user){
-			if(thisTime - user.validTime < maxTime) {
-				if(user.validToken == vToken){
-					User.validateUser(username, (err, vUser) =>{
-						if(err) throw err;
-						if(vUser) {
-							return res.json({
-								success: true, 				
-								msg:'User validated'
-							});
-						}
-					}); 
-				} else{
-					return res.json({
-						success: false, 
-						msg:'Wrong token'
-					});	
-				}			
+	var gUser = function(callback){
+		getUser(username, (err, user) => {
+			if(err) callback(err);
+			if(user){					
+				callback(null, user);
 			} else {
-				return res.json({
-					success: false, 
-					msg:'Token has expired'
-				});				
-			} 
-		} else {
-			return res.json({
-				success: false, 
-				msg:'User not found'
-			});
-		}
-	});
-});
-
-
-// Delete user
-userRouter.get('/dUser', passport.authenticate('jwt', {session:false}), (req, res, next) => {
-	const user = req.user;
-
-	let userToDelete = new User({
-		username: user.username
-	});
-
-	User.getUserByUsername(userToDelete.username, (err, user) => {
-		if(err) throw err;
-		if(!user){
-			return res.json({
-				success: false, 
-				msg:'User not found'
-			});			
-		} else {
-			User.deleteUser(user, (err, user) =>{
-				if(err) throw err;
-			
-				return res.json({
-					success: true, 
-					msg:'User deleted'
-				});			
-			});
-		}
-	});
-});
-
-// Update user
-userRouter.post('/uUser', passport.authenticate('jwt', {session:false}), (req, res, next) => {
-	const user = req.user;
-	const updateData = req.body.updateData;
-
-	let dataToUpdate = new User({
-		username: user.username,
-		fName: updateData.fName,
-		lName: updateData.lName,		
-		email: updateData.email
-	});
-
-	User.getUserByUsername(updateData.username, (err, userToUpdate) => {
-		if(err) throw err;
-		if(!user){
-			console.log("Returning error");
-			return res.json({success: false, msg:'User not found'});			
-		} else {
-			User.updateUser(userToUpdate, dataToUpdate, (err, user) =>{
-
-			});
-		}
-	});
-});
-
-// Authenticate
-userRouter.post('/authUser', (req, res, next) => {
-	const username = req.body.username;
-	const password = req.body.password;
-	//var sess = req.session;
-	
-	User.getUserByUsername(username, (err, user) => {
-		if(err) throw err;
-		if(!user){
-			return res.json({
-				success: false, 
-				msg: 'Login failed, invalid username or password'			
-			});			
-		}
-
-		User.comparePassword(password, user.password, (err, isMatch) => {
-			if(err) throw err;
-			if(isMatch){
-				const token = jwt.sign(user, config.secret, {
-					expiresIn: 604800 //1 week
-				});
-				sess.username = username;
-				sess.isLogged = true;
-				sess.jwToken = "JWT " + token;
-				return res.json({
-					success: true,
-					token: 'JWT '+token,
-					user: {
-						id: user._id,
-						name: user.name,
-						username: user.username,
-						email: user.email
-					}
-				});
-			} else{
-				return res.json({
-					success: false, 
-					msg: 'Login failed, invalid username or password'
-				});
-			};
+				callback(new Error('Username not found'))
+			}
 		});
-	});
+	}
+
+	var validUser = function(user, callback) {
+		User.validateUser(user.username, (err, vUser) =>{
+			if(err) callback(err);
+			if(vUser) {
+				if(thisTime - user.validTime < maxTime) {
+					if(vUser.validToken == vToken){
+						callback(null, vUser)
+					} else{
+						callback(new Error('Wrong token'));
+					}			
+				} else {
+					callback(new Error('Token has expired'));
+				} 
+			}
+		}); 
+	} 
+
+	async.waterfall([
+    	gUser,
+    	validUser
+	], function (err, result) {
+		if (err) {
+			return res.json({
+					success: false, 				
+					msg: err.message			
+				});
+		}
+		return res.json({
+			success: true, 				
+			msg: result			
+		});    	
+    });
 });
 
-// Get User
-userRouter.get('/gUser', passport.authenticate('jwt', {session:false}), (req, res, next) => {
-	console.log(req.user);
-	return res.json({
-		user: req.user
+
+//*****************ROUTES TO DB MIDDLEWARE*********************//
+
+function getUser (username, callback) {
+	User.getUserByUsername(username, (err, user) => {
+		if(err) callback(err);
+		if(user){
+			callback(null, user) ;
+		} else {
+			callback(null, false) ;
+		}
 	});
-});
+}
+
+function getMail(email, callback) {
+	User.getUserByEmail(email, (err, user) => {
+		if(err) callback(err);
+		if(user){
+			callback(null, user);
+		} else{
+
+			callback(null, false);			}
+	});
+}
+
+function addUser (newUser, callback) {
+	User.addUser(newUser, (err, user) => {
+		if(err){
+			callback(new Error('Failed to create user'))
+		} else {
+			callback(null, user);	
+		}	
+	});
+}
 
 module.exports = userRouter;

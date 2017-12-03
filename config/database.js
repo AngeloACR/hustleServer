@@ -8,5 +8,8 @@ module.exports = {
 
 	contactMail: 'angeloacr@thehustleclub.org',
 	contactPass: 'MiHustle47',
-	salesMail: 'smtps://josebriceno@thehustleclub.org:MiHustle61@smtp.gmail.com',
+
+	generalMail: 'josebriceno@thehustleclub.org',
+	generalPass: 'MiHustle61',
+
 }

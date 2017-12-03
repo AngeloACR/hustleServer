@@ -79,8 +79,11 @@ app.use('/users', users);
 	//Shop stuff routes
 app.use('/products', products);
 app.use('/shoppingCarts', shoppingCarts);
-app.use('/payment', payments);
-
+app.use('/billings', billings);
+app.use('/cards', cards);
+app.use('/charges', charges);
+app.use('/shippings', shippings);
+app.use('/payments', payments);
 
 // Index Route
 
