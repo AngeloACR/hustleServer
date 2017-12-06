@@ -1,10 +1,10 @@
 const express = require('express');
 const checkoutRouter = express.Router();
-const Checkout = require('../models/card');
+const Card = require('../models/card');
 const passport = require('passport');
 
 
-//Create Checkout
+//Create Card
 checkoutRouter.post('/cCheck', passport.authenticate('jwt', {session:false}), (req, res, next) => {
 
 	const user = req.user;
@@ -14,7 +14,7 @@ checkoutRouter.post('/cCheck', passport.authenticate('jwt', {session:false}), (r
 	const bAddress = req.body.bAddress;
 	const cards = req.body.cards
 
-	let newCheckout = new Checkout({
+	let newCard = new Card({
 		username: user.username,
 		email: email,
 		charges: charges,
@@ -23,7 +23,7 @@ checkoutRouter.post('/cCheck', passport.authenticate('jwt', {session:false}), (r
 		cards: cards
 	});
 
-	Checkout.createCheckoute(newCheckout, (cErr,check) => {
+	Card.createCheckoute(newcard, (cErr,check) => {
 		if(cErr) {
 			return res.json({
 				success: false, 
@@ -32,13 +32,13 @@ checkoutRouter.post('/cCheck', passport.authenticate('jwt', {session:false}), (r
 		}
 		return res.json({
 			success: true, 
-			msg: 'Checkout registered'
+			msg: 'Card registered'
 		});	
 	});
 
 });
 
-//Get Checkout
+//Get Card
 checkoutRouter.get('/gCheck', passport.authenticate('jwt', {session:false}), (req, res, next) => {
 	const user = req.user;
 
@@ -48,24 +48,24 @@ checkoutRouter.get('/gCheck', passport.authenticate('jwt', {session:false}), (re
 			console.log("Returning error");
 			return res.json({
 				success: false, 
-				msg:'Checkout not found'
+				msg:'Card not found'
 			});			
 		} else{
 			return res.json({
 				success: true, 
-				checkout: check
+				Card: check
 			});				
 		};
 	});
 
 });
 
-//Update Checkout
+//Update Card
 checkoutRouter.post('/uCheck', passport.authenticate('jwt', {session:false}), (req, res, next) => {
 	const user = req.user;
 	const updateData = req.body.updateData
 
-	let dataToUpdate = new Checkout({
+	let dataToUpdate = new Card({
 		username: user.username,
 		email: updateData.email,
 		charges: updateData.Charges,
@@ -80,20 +80,20 @@ checkoutRouter.post('/uCheck', passport.authenticate('jwt', {session:false}), (r
 			console.log("Returning error");
 			return res.json({
 				success: false, 
-				msg:'Checkout not found'
+				msg:'Card not found'
 			});			
 		} else{
-			Checkout.updateCheckout(check, dataToUpdate, (uErr,uCheck) => {
+			Card.updateCheckout(check, dataToUpdate, (uErr,uCheck) => {
 				return res.json({
 					success: true, 
-					msg: 'Checkout updated'
+					msg: 'Card updated'
 				});				
 			});
 		};
 	});
 });
 
-//Delete Checkout
+//Delete Card
 checkoutRouter.post('/dCheck', passport.authenticate('jwt', {session:false}), (req, res, next) => {
 	const user = req.user;
 
@@ -102,14 +102,14 @@ checkoutRouter.post('/dCheck', passport.authenticate('jwt', {session:false}), (r
 		if(!check){
 			return res.json({
 				success: false, 
-				msg:'Checkout not found'
+				msg:'Card not found'
 			});			
 		} else{
-			Checkout.deleteCheckout(check, (cErr,dCheck) => {
+			Card.deleteCheckout(check, (cErr,dCheck) => {
 				if(err) throw err;
 				return res.json({
 					success: true, 
-					msg:'Checkout deleted'
+					msg:'Card deleted'
 				});			
 			});	
 		};

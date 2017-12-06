@@ -18,15 +18,6 @@ const UserSchema = mongoose.Schema({
 		type: String,
 		required: true
 	},
-	validToken: {
-		type: String,
-	},
-	validTime: {
-		type: Number,
-	},
-	validEmail:{
-		type: Boolean
-	},
 	username: {
 		type: String,
 		required: true
@@ -37,6 +28,15 @@ const UserSchema = mongoose.Schema({
 	},
 	role:{
 		type: String,
+	},
+	validToken: {
+		type: String,
+	},
+	validTime: {
+		type: Number,
+	},
+	validEmail:{
+		type: Boolean
 	},
 	hasCart:{
 		type: Boolean
