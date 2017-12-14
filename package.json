@@ -11,6 +11,7 @@
     "bcryptjs": "*",
     "body-parser": "*",
     "compression": "^1.7.0",
+    "cookie-parser": "^1.4.3",
     "cookie-session": "*",
     "cors": "*",
     "express": "*",

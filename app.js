@@ -7,6 +7,8 @@ const mongoose = require('mongoose');
 const compression = require('compression');
 const config = require('./config/database');
 const cookieSess = require('cookie-session');
+const helmet = require('helmet')
+const RateLimit = require('express-rate-limit');
 const app = express();
 
 const users = require('./users/routes/users');
@@ -45,6 +47,17 @@ mongoose.connection.on('error', (err) => {
 
 // Middlewares initialization
 
+// app.enable('trust proxy'); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS if you use an ELB, custom Nginx setup, etc) 
+ 
+var limiter = new RateLimit({
+  windowMs: 15*60*1000, // 15 minutes 
+  max: 50, // limit each IP to 100 requests per windowMs 
+  delayMs: 0 // disable delaying - full speed until the max limit is reached 
+});
+ 
+//  apply to all requests 
+app.use(limiter);
+
 	//App compression
 app.use(compression());
 
@@ -61,6 +74,8 @@ app.use(cookieSess ({
 	secret: config.cSecret,
     maxAge: 7*24 * 60 * 60 * 1000 //A week
 	}));
+
+app.use(helmet());
 
 	// Passport Middleware
 app.use(passport.initialize());
