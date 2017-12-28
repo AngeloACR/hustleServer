@@ -1,7 +1,7 @@
 module.exports = {
 
 // DATABASES ADDRESSES
-	prodDB: "mongodb://angeloacr:MiUser47@ds129600.mlab.com:29600/hustleweb",
+	prodDB: "mongodb://angeloacr:MiUser47@ds129600.mlab.com:29600/hustlerweb",
 	testDB: "mongodb://localhost:27017/hustleWeb",
 	
 // SECRETS FOR ENCRYPTION
