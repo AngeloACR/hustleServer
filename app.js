@@ -27,8 +27,8 @@ const charges = require('./shop/routes/charges');
 const testPort= 3000;
 const prodPort = process.env.PORT || 8080;
 
-//myPort=testPort;
-myPort=prodPort;
+//const myPort=testPort;
+const myPort=prodPort;
 
 //Database stuff
 
