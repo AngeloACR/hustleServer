@@ -27,10 +27,13 @@ const charges = require('./shop/routes/charges');
 const testPort= 3000;
 const prodPort = process.env.PORT || 8080;
 
+//myPort=testPort;
+myPort=prodPort;
+
 //Database stuff
 
-const myDB = config.testDB;
-//const myDB = config.prodDB;
+//const myDB = config.testDB;
+const myDB = config.prodDB;
 
 	// Connect to Database
 mongoose.connect(myDB);
@@ -116,6 +119,6 @@ app.get('/*', (req,res) => {
 
 // Start Server
 
-app.listen(testPort, () => {
-	console.log('Server started on port '+testPort);
+app.listen(myPort, () => {
+	console.log('Server started on port '+myPort);
 });

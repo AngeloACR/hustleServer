@@ -9,11 +9,7 @@ module.exports = {
 	vSecret: 'Becoming an outstanding Hustle Man',
 	cSecret: 'My incredible Hustle Session',
 
-// SOME OTHER IMPORTAN STUFF
+// SOME OTHER IMPORTANT STUFF
 	contactMail: 'angeloacr@thehustleclub.org',
-	contactPass: 'MiHustle47',
-
-	generalMail: 'josebriceno@thehustleclub.org',
-	generalPass: 'MiHustle61',
-
+	contactPass: 'MiHustle47'
 }
